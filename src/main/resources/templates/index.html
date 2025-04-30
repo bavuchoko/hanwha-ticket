@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <title>Title</title>
+    <style>
+        ul, li{ list-style: none; padding: 0; margin: 0; }
+        #result { margin-top: 20px; }
+        .game-date{ line-height: 70px; flex: 0 0 auto; padding: 0 5px 0 25px; display: table-cell; width: 160px; }
+        .game-date-date{ display: inline-block; overflow: hidden; padding-left: 1px; font-family: 'Roboto', sans-serif; vertical-align: middle; font-size: 40px; font-weight: 300; letter-spacing: -0.04em; }
+        .game-date-time{ margin-left: 9px; display: inline-block; margin-bottom: 2px; font-size: 13px; font-weight: 400; line-height: 14px; color: #62676c; letter-spacing: -0.04em; }
+        .game-date-time-time{ display: inline-block; font-family: 'Roboto', sans-serif; font-size: 17px; line-height: 18px; color: #62676c; letter-spacing: -0.04em; }
+        .team-logo-box{ padding-left: 8px; width: 230px; box-sizing: border-box; text-align: center; }
+        .team-logo{ display: inline-block; width: 70px; height: 70px; vertical-align: middle; }
+        .versus{ display: inline-block; width: 22px; height: 14px; margin: 2px 12px 0 13px; font-size: 17px; color: #878d95; vertical-align: middle; }
+        .today-frame{ border: 2px solid #fa2828; box-sizing: border-box; }
+        .match_info_bx{ margin-left: 0; padding: 0 57px; width: 272px; max-width: 272px; box-sizing: border-box; }
+        .flag{ display: inline-block; margin: 4px 0 0 4px; padding: 3px 7px; font-size: 12px; border: 1px solid #242428; border-radius: 16px; background-color: #fff; color: #242428; }
+        .place{ overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; max-height: 44px; margin-top: 5px; font-size: 13px; font-weight: bold; line-height: 70px; }
+        .match-btn{ font-size: 14px; display: block; z-index: 99; margin-left: auto; padding: 0 34px; }
+        .not-yet{ font-weight: bold; margin-top: 15px; display: block; width: 148px; font-size: 14px; padding: 9px 11px; border-radius: 6px; text-align: center; background-color: #e4e6e8; }
+        .btn_primary{ margin-top: 15px; border: 1px solid #fa2828; background-color: #fa2828; display: block; width: 148px; font-size: 14px; padding: 9px 11px; border-radius: 6px; color: #fff; text-align: center; }
+    </style>
+</head>
+<body>
+
+<form id="dateForm">
+    <label for="start">시작일: </label>
+    <input type="date" id="start" name="start" th:value="${startDate}" />
+    <label for="end">종료일: </label>
+    <input type="date" id="end" name="end" th:value="${endDate}" />
+    <button type="submit">조회</button>
+</form>
+
+<div style="width: 1120px; margin: auto">
+    <ul style="width: 100%;" id="result"></ul>
+</div>
+
+<script>
+    document.getElementById('dateForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+
+        const start = document.getElementById('start').value.replace(/-/g, '');
+        const end = document.getElementById('end').value.replace(/-/g, '');
+        const url = `/proxy/schedules?startDate=${start}&endDate=${end}`;
+
+        fetch(url)
+            .then(response => response.json())
+            .then(res => {
+                const resultDiv = document.getElementById('result');
+                resultDiv.innerHTML = '';
+
+                if (res && res.success) {
+                    const schedules = res.data?.schedules || [];
+                    if (schedules.length > 0) {
+                        const ul = document.createElement('ul');
+                        ul.style.width = '100%';
+
+                        schedules.forEach(schedule => {
+                            if (schedule.awayTeam.teamId === 63) return;
+
+                            const li = document.createElement('li');
+                            li.style.padding = '26px 0';
+
+                            const daysOfWeek = ["일", "월", "화", "수", "목", "금", "토"];
+                            const date = new Date(schedule.scheduleDate);
+                            const reserve = new Date(schedule.reserveOpenDate);
+                            const reserveTime = new Date(schedule.reserveOpenDateTime);
+                            const today = new Date();
+
+                            const matchDate = `${(date.getMonth()+1).toString().padStart(2,'0')}.${date.getDate().toString().padStart(2,'0')}`;
+                            const matchHour = `${date.getHours().toString().padStart(2,'0')}:${date.getMinutes().toString().padStart(2,'0')}`;
+                            const dayOfWeek = daysOfWeek[date.getDay()];
+                            const rDate = `${reserve.getFullYear()}.${(reserve.getMonth()+1).toString().padStart(2,'0')}.${reserve.getDate().toString().padStart(2,'0')} (${daysOfWeek[reserve.getDay()]})`;
+                            const reserveDate = `${(reserve.getMonth() + 1).toString().padStart(2, '0')}.${reserve.getDate().toString().padStart(2, '0')}`;
+                            const todayDate = `${(today.getMonth() + 1).toString().padStart(2, '0')}.${today.getDate().toString().padStart(2, '0')}`;
+                            const openHour = reserveTime.getHours().toString().padStart(2, '0');
+                            const openMin = reserveTime.getMinutes().toString().padStart(2, '0');
+
+                            let reserveButtonHtml = '';
+                            if (reserveTime <= today) {
+                                reserveButtonHtml = `
+                                <div class="match-btn">
+                                    <div
+                                    data-url="https://www.ticketlink.co.kr/reserve/product/55319?scheduleId=${schedule.scheduleId}"
+                                    class="common_btn btn_primary btn_reserve" style="cursor: pointer;">예매하기</div>
+                                </div>`;
+                            } else {
+                                reserveButtonHtml = `
+                                <div class="match-btn">
+                                    <div class="not-yet" id="not-yet-${schedule.scheduleId}">
+                                        <p style="margin: 0">${rDate}</p>
+                                        <p style="margin: 0">${openHour}:${openMin} 오픈예정 </p>
+                                    </div>
+                                </div>`;
+                            }
+
+                            if (todayDate === reserveDate) {
+                                li.classList.add('today-frame');
+                            } else {
+                                li.style.borderBottom = '1px solid #ccc';
+                            }
+
+                            li.innerHTML = `
+                            <div style="display: flex">
+                                <div class="game-date">
+                                    <div class="game-date-date">${matchDate}</div>
+                                    <div class="game-date-time">
+                                        <div style="font: 13px;">${dayOfWeek}</div>
+                                        <div class="game-date-time-time">${matchHour}</div>
+                                    </div>
+                                </div>
+                                <div class="team-logo-box">
+                                    <img class="team-logo" src="http://image.toast.com/aaaaab/ticketlink/TKL_6/Hanwha(new)(1).png" alt="한화이글스">
+                                    <span class="versus">VS</span>
+                                    <img class="team-logo" src="${schedule.awayTeam.logoImagePath}" alt="상대팀">
+                                </div>
+                                <div class="match_info_bx">
+                                    <div class="flag_area"><span class="flag flag_clean">클린예매</span></div>
+                                    <div class="match_tit"><span>${schedule.matchTitle}</span></div>
+                                    <div class="team_name"><span><strong>${schedule.homeTeam.teamName.substring(0,2)}</strong> vs <strong>${schedule.awayTeam.teamName.substring(0,2)}</strong></span></div>
+                                </div>
+                                <div class="match_info_bx">
+                                    <div class="place">${schedule.venueName}</div>
+                                </div>
+                                ${reserveButtonHtml}
+                            </div>`;
+                            ul.appendChild(li);
+                        });
+
+
+
+                        resultDiv.appendChild(ul);
+
+                        // 예매 버튼에 클릭 이벤트 연결
+                        document.querySelectorAll('.btn_reserve').forEach(btn => {
+                            btn.addEventListener('click', function(e) {
+                                const requestUrl = e.currentTarget.dataset.url;
+                                window.open(requestUrl, '_blank');
+                            });
+                        });
+
+
+
+                    } else {
+                        resultDiv.innerHTML = "<p>일정이 없습니다.</p>";
+                    }
+                } else {
+                    resultDiv.innerHTML = "<p>일정이 없습니다.</p>";
+                }
+            })
+            .catch(error => {
+                console.error("API 호출 실패:", error);
+                document.getElementById('result').innerHTML = "<p>데이터를 불러오는 데 실패했습니다.</p>";
+            });
+    });
+</script>
+
+</body>
+</html>
