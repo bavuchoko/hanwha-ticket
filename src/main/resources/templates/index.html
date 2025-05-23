@@ -164,7 +164,8 @@
 
                         document.querySelectorAll('.btn_waiting').forEach(btn => {
                             btn.addEventListener('click', function(e) {
-                                const reserveTime = new Date(getKSTDate().getTime() + 3000); // 테스트용 3초
+                                const reserveTime = new Date(btn.dataset.time);
+                                // const reserveTime = new Date(getKSTDate().getTime() + 3000); // 테스트용 3초
                                 const id = btn.dataset.id;
                                 const requestUrl = btn.dataset.url; // <-- 이걸 미리 저장해두기
 
