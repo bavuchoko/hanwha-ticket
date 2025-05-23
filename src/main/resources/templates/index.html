@@ -37,6 +37,23 @@
 </div>
 
 <script>
+
+    function formatTime(date) {
+        const yyyy = date.getFullYear();
+        const MM = String(date.getMonth() + 1).padStart(2, '0');
+        const dd = String(date.getDate()).padStart(2, '0');
+        const HH = String(date.getHours()).padStart(2, '0');
+        const mm = String(date.getMinutes()).padStart(2, '0');
+        const ss = String(date.getSeconds()).padStart(2, '0');
+        const SSS = String(date.getMilliseconds()).padStart(3, '0');
+        return `${yyyy}-${MM}-${dd} ${HH}:${mm}:${ss}.${SSS}`;
+    }
+    function getKSTDate() {
+        const now = new Date();
+        const utc = now.getTime() + (now.getTimezoneOffset() * 60000);
+        return new Date(utc + (9 * 60 * 60 * 1000));
+    }
+
     document.getElementById('dateForm').addEventListener('submit', function(e) {
         e.preventDefault();
 
@@ -87,8 +104,12 @@
                                 </div>`;
                             } else {
                                 reserveButtonHtml = `
-                                <div class="match-btn">
-                                    <div class="not-yet" id="not-yet-${schedule.scheduleId}">
+                                <div class="match-btn ">
+                                    <div class="not-yet btn_waiting" id="not-yet-${schedule.scheduleId}"
+                                    data-url="https://www.ticketlink.co.kr/reserve/product/55319?scheduleId=${schedule.scheduleId}"
+                                    data-time="${reserveTime}"
+                                    data-id="not-yet-${schedule.scheduleId}"
+                                    >
                                         <p style="margin: 0">${rDate}</p>
                                         <p style="margin: 0">${openHour}:${openMin} 오픈예정 </p>
                                     </div>
@@ -122,6 +143,7 @@
                                 </div>
                                 <div class="match_info_bx">
                                     <div class="place">${schedule.venueName}</div>
+                                    <p style="text-align: left">${schedule.scheduleId} </p>
                                 </div>
                                 ${reserveButtonHtml}
                             </div>`;
@@ -140,7 +162,29 @@
                             });
                         });
 
+                        document.querySelectorAll('.btn_waiting').forEach(btn => {
+                            btn.addEventListener('click', function(e) {
+                                const reserveTime = new Date(getKSTDate().getTime() + 3000); // 테스트용 3초
+                                const id = btn.dataset.id;
+                                const requestUrl = btn.dataset.url; // <-- 이걸 미리 저장해두기
 
+                                const intervalId = setInterval(() => {
+                                    const nowKST = getKSTDate();
+                                    const diff = reserveTime - nowKST;
+
+                                    if (diff <= 0) {
+                                        clearInterval(intervalId);
+                                        console.log(requestUrl);
+                                        window.open(requestUrl, '_blank');
+                                    } else {
+                                        const timeLeftDiv = document.getElementById(id);
+                                        const seconds = Math.floor(diff / 1000);
+                                        const milliseconds = diff % 1000;
+                                        timeLeftDiv.innerHTML = `남은 시간: ${seconds}초 ${milliseconds}ms`;
+                                    }
+                                }, 50);
+                            });
+                        });
 
                     } else {
                         resultDiv.innerHTML = "<p>일정이 없습니다.</p>";
