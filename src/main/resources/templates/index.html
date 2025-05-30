@@ -20,6 +20,14 @@
         .match-btn{ font-size: 14px; display: block; z-index: 99; margin-left: auto; padding: 0 34px; }
         .not-yet{ font-weight: bold; margin-top: 15px; display: block; width: 148px; font-size: 14px; padding: 9px 11px; border-radius: 6px; text-align: center; background-color: #e4e6e8; }
         .btn_primary{ margin-top: 15px; border: 1px solid #fa2828; background-color: #fa2828; display: block; width: 148px; font-size: 14px; padding: 9px 11px; border-radius: 6px; color: #fff; text-align: center; }
+        @keyframes blinkRed {
+            0%, 50%, 100% { background: #f3a7a7; }
+            25%, 75% { background: transparent; }
+        }
+
+        .blink-red {
+            animation: blinkRed 3s infinite;
+        }
     </style>
 </head>
 <body>
@@ -32,7 +40,7 @@
     <button type="submit">조회</button>
 </form>
 
-<div style="width: 1120px; margin: auto">
+<div style="width: 1168px; margin: auto">
     <ul style="width: 100%;" id="result"></ul>
 </div>
 
@@ -69,12 +77,13 @@
 
                 if (res && res.success) {
                     const schedules = res.data?.schedules || [];
+                    console.log(schedules)
                     if (schedules.length > 0) {
                         const ul = document.createElement('ul');
                         ul.style.width = '100%';
 
                         schedules.forEach(schedule => {
-                            if (schedule.awayTeam.teamId === 63) return;
+                            // if (schedule.awayTeam.teamId === 63) return;
 
                             const li = document.createElement('li');
                             li.style.padding = '26px 0';
@@ -99,7 +108,7 @@
                                 reserveButtonHtml = `
                                 <div class="match-btn">
                                     <div
-                                    data-url="https://www.ticketlink.co.kr/reserve/product/55319?scheduleId=${schedule.scheduleId}"
+                                    data-url="https://www.ticketlink.co.kr/reserve/product/${schedule.productId}?scheduleId=${schedule.scheduleId}"
                                     class="common_btn btn_primary btn_reserve" style="cursor: pointer;">예매하기</div>
                                 </div>`;
                             } else {
@@ -132,7 +141,7 @@
                                     </div>
                                 </div>
                                 <div class="team-logo-box">
-                                    <img class="team-logo" src="http://image.toast.com/aaaaab/ticketlink/TKL_6/Hanwha(new)(1).png" alt="한화이글스">
+                                    <img class="team-logo" src="${schedule.homeTeam.logoImagePath}" alt="홈팀">
                                     <span class="versus">VS</span>
                                     <img class="team-logo" src="${schedule.awayTeam.logoImagePath}" alt="상대팀">
                                 </div>
@@ -165,7 +174,7 @@
                         document.querySelectorAll('.btn_waiting').forEach(btn => {
                             btn.addEventListener('click', function(e) {
                                 const reserveTime = new Date(btn.dataset.time);
-                                // const reserveTime = new Date(getKSTDate().getTime() + 3000); // 테스트용 3초
+                                // const reserveTime = new Date(getKSTDate().getTime() + 12000); // 테스트용 12초
                                 const id = btn.dataset.id;
                                 const requestUrl = btn.dataset.url; // <-- 이걸 미리 저장해두기
 
@@ -179,9 +188,30 @@
                                         window.open(requestUrl, '_blank');
                                     } else {
                                         const timeLeftDiv = document.getElementById(id);
-                                        const seconds = Math.floor(diff / 1000);
-                                        const milliseconds = diff % 1000;
-                                        timeLeftDiv.innerHTML = `<p style="margin: 0">남은 시간: </p> <p style="margin: 0">${seconds}초 ${milliseconds}ms</p>`;
+
+                                        const totalSeconds = Math.floor(diff / 1000);
+                                        const milliseconds = String(diff % 1000).padStart(3, '0');
+
+                                        const min = Math.floor(totalSeconds / 60);
+                                        const seconds = totalSeconds % 60;
+
+                                        let timeString = '';
+
+                                        if (min > 0) {
+                                            timeString += `${min}분 `;
+                                        }
+
+                                        timeString += `${seconds}초 ${milliseconds}ms`;
+                                        // if (totalSeconds <= 5) {
+                                        //     document.body.classList.add('blink-red');
+                                        // } else {
+                                        //     document.body.classList.remove('blink-red');
+                                        // }
+                                        timeLeftDiv.innerHTML = `
+                                          <p style="margin: 0"> -남은 시간- </p>
+                                          <p style="margin: 0">${timeString}</p>
+                                        `;
+
                                     }
                                 }, 10);
                             });
