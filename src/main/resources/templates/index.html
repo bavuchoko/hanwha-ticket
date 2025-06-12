@@ -74,7 +74,7 @@
             .then(res => {
                 const resultDiv = document.getElementById('result');
                 resultDiv.innerHTML = '';
-
+                console.log(res)
                 if (res && res.success) {
                     const schedules = res.data?.schedules || [];
                     console.log(schedules)
@@ -109,14 +109,14 @@
                                 reserveButtonHtml = `
                                 <div class="match-btn">
                                     <div
-                                    data-url="https://www.ticketlink.co.kr/reserve/product/${schedule.productId}?scheduleId=${schedule.scheduleId}"
+                                    data-url="https://www.ticketlink.co.kr/reserve/plan/schedule/${schedule.scheduleId}?menuIndex=reserve"
                                     class="common_btn btn_primary btn_reserve" style="cursor: pointer;">예매하기</div>
                                 </div>`;
                             } else {
                                 reserveButtonHtml = `
                                 <div class="match-btn ">
                                     <div class="not-yet btn_waiting" id="not-yet-${schedule.scheduleId}"
-                                    data-url="https://www.ticketlink.co.kr/reserve/product/${schedule.productId}?scheduleId=${schedule.scheduleId}"
+                                    data-url="https://www.ticketlink.co.kr/reserve/plan/schedule/${schedule.scheduleId}?menuIndex=reserve}"
                                     data-time="${reserveTime}"
                                     data-id="not-yet-${schedule.scheduleId}"
                                     >
