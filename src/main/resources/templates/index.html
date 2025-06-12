@@ -32,12 +32,12 @@
 </head>
 <body>
 
-<form id="dateForm">
-    <label for="start">시작일: </label>
-    <input type="date" id="start" name="start" th:value="${startDate}" />
-    <label for="end">종료일: </label>
-    <input type="date" id="end" name="end" th:value="${endDate}" />
-    <button type="submit">조회</button>
+<form id="dateForm" style="width: 100%; text-align: center; ">
+    <label for="start" style="display: none">시작일: </label>
+    <input type="date" id="start" name="start" th:value="${startDate}" style="display: none"/>
+    <label for="end" style="display: none">종료일: </label>
+    <input type="date" id="end" name="end" th:value="${endDate}" style="display: none"/>
+    <button type="submit" style="width: 200px; height: 50px; ">조회</button>
 </form>
 
 <div style="width: 1168px; margin: auto">
@@ -64,10 +64,10 @@
 
     document.getElementById('dateForm').addEventListener('submit', function(e) {
         e.preventDefault();
-
         const start = document.getElementById('start').value.replace(/-/g, '');
         const end = document.getElementById('end').value.replace(/-/g, '');
-        const url = `/proxy/schedules?startDate=${start}&endDate=${end}`;
+        // const url = `/proxy/schedules?startDate=${start}&endDate=${end}`;
+        const url = `/schedules`;
 
         fetch(url)
             .then(response => response.json())
