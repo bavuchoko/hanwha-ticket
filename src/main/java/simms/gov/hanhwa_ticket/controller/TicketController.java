@@ -1,7 +1,6 @@
 package simms.gov.hanhwa_ticket.controller;
 
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -9,7 +8,6 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.client.RestTemplate;
 
 import java.io.BufferedReader;
@@ -26,7 +24,7 @@ public class TicketController {
     private final RestTemplate restTemplate = new RestTemplate();
 
     private String QUERY;
-    private String SCHEDULE;
+
 
 
     @GetMapping("/")
@@ -94,7 +92,7 @@ public class TicketController {
                 while ((line = in.readLine()) != null) {
                     content.append(line);
                 }
-                SCHEDULE = content.toString();
+                Schedule.LIST = content.toString();
             }
         }catch (Exception e) {
             e.printStackTrace();
@@ -103,10 +101,10 @@ public class TicketController {
 
     @GetMapping("/schedules")
     public ResponseEntity<String> getSchedules() throws IOException {
-        if(StringUtils.isEmpty(SCHEDULE)) {
+        if(StringUtils.isEmpty(Schedule.LIST)) {
             return  ResponseEntity.ok("");
         }else{
-            return ResponseEntity.ok(SCHEDULE);
+            return ResponseEntity.ok(Schedule.LIST);
         }
 
     }
