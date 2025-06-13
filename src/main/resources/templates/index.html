@@ -183,7 +183,7 @@
                                     const nowKST = getKSTDate();
                                     const diff = reserveTime - nowKST;
 
-                                    if (diff <= 20) {
+                                    if (diff <= 120) {
                                         clearInterval(intervalId);
                                         console.log(requestUrl);
                                         window.open(requestUrl, '_blank');
@@ -198,11 +198,11 @@
 
                                         let timeString = '';
 
-                                        if (min > 120) {
+                                        if (min > 0) {
                                             timeString += `${min}분 `;
                                         }
 
-                                        timeString += `${min}분 ${seconds}초 ${milliseconds}ms`;
+                                        timeString += `${seconds}초 ${milliseconds}ms`;
                                         // if (totalSeconds <= 5) {
                                         //     document.body.classList.add('blink-red');
                                         // } else {
