@@ -1,0 +1,101 @@
+<html>
+<body>
+
+
+
+<label for="requestUrl">요청주소:</label>
+<input type="text" id="requestUrl"  style="width: calc(100% - 200px); height: 30px; margin: 5px;">
+<p>시간 입력 안하면 기본값 11시 00분</p>
+<label for="hourInput">시 (0~23):</label>
+<input type="number" id="hourInput" min="0" max="23" placeholder="예: 11" style="width: 60px; margin: 5px;">
+<label for="minuteInput">분 (0~59):</label>
+<input type="number" id="minuteInput" min="0" max="59" placeholder="예: 0" style="width: 60px; margin: 5px;">
+<br>
+<button id="startRequest">요청 시작</button>
+
+<div id="currentTime" style="margin-top: 10px; font-size: 18px;"></div>
+<div id="timeLeft1" style="margin-top: 5px; font-size: 20px; font-weight: bold;"></div>
+<div id="timeLeft2" style="margin-top: 5px; font-size: 20px; font-weight: bold;"></div>
+
+<script>
+
+    let timerId = null;
+
+    function formatTime(date) {
+        const yyyy = date.getFullYear();
+        const MM = String(date.getMonth() + 1).padStart(2, '0');
+        const dd = String(date.getDate()).padStart(2, '0');
+        const HH = String(date.getHours()).padStart(2, '0');
+        const mm = String(date.getMinutes()).padStart(2, '0');
+        const ss = String(date.getSeconds()).padStart(2, '0');
+        const SSS = String(date.getMilliseconds()).padStart(3, '0');
+        return `${yyyy}-${MM}-${dd} ${HH}:${mm}:${ss}.${SSS}`;
+    }
+
+    function getKSTDate() {
+        const now = new Date();
+        const utc = now.getTime() + (now.getTimezoneOffset() * 60000);
+        return new Date(utc + (9 * 60 * 60 * 1000));
+    }
+
+    document.getElementById('startRequest').addEventListener('click', () => {
+        const hourInput = document.getElementById('hourInput').value.trim();
+        const requestUrl = document.getElementById('requestUrl').value.trim();
+        const hour = hourInput === "" ? 11 : parseInt(hourInput, 10);
+        const minute = minuteInput === "" ? 0 : parseInt(minuteInput, 10);
+
+        if (isNaN(hour) || isNaN(minute) || hour < 0 || hour > 23 || minute < 0 || minute > 59) {
+            alert("올바른 시간(0~23)과 분(0~59)을 입력하세요.");
+            return;
+        }
+
+        if (timerId) {
+            clearInterval(timerId);
+        }
+
+        timerId = setInterval(() => {
+            const nowKST = getKSTDate();
+
+            const targetTime = new Date(
+                nowKST.getFullYear(),
+                nowKST.getMonth(),
+                nowKST.getDate(),
+                hour,
+                minute,
+                0,
+                0
+            );
+
+            const diff = targetTime - nowKST;
+
+            const currentTimeDiv = document.getElementById('currentTime');
+            const timeLeftDiv1 = document.getElementById('timeLeft1');
+
+            currentTimeDiv.textContent = `현재 시각 (KST): ${formatTime(nowKST)}`;
+
+            if (diff <= 80) {
+                clearInterval(timerId);
+                timeLeftDiv1.textContent = "페이지 이동 중...";
+
+                window.location.href = requestUrl;
+
+            } else {
+                const seconds = Math.floor(diff / 1000);
+                const milliseconds = diff % 1000;
+                timeLeftDiv1.textContent = `남은 시간: ${seconds}초 ${milliseconds}ms`;
+            }
+        }, 20);
+    });
+
+
+
+
+</script>
+
+
+
+
+
+
+</body>
+</html>
