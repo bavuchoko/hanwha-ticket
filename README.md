@@ -1,4 +1,4 @@
-[테스트](https://jongsu.kr:8080)
+[테스트](http://jongsu.kr:8080)
 
 
 
